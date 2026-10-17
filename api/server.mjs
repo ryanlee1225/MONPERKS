@@ -4,12 +4,20 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createLedger, verifyWebhook, InputError } from './ledger.mjs';
+import {createTestnetService} from './testnet.mjs';
 
 const root=path.resolve(fileURLToPath(new URL('../dist/',import.meta.url)));
 const port=Number(process.env.PORT||4173),host=process.env.HOST||'127.0.0.1';
 const origin=process.env.APP_ORIGIN||`http://localhost:${port}`;
+if(process.env.NODE_ENV==='production'&&(!process.env.APP_ORIGIN?.startsWith('https://')||(process.env.SESSION_SECRET||'').length<32||(process.env.ADMIN_API_TOKEN||'').length<32))throw Error('Production requires HTTPS APP_ORIGIN, SESSION_SECRET and ADMIN_API_TOKEN (32+ characters each)');
 const sessionKey=process.env.SESSION_SECRET||randomBytes(32).toString('hex');
 const ledger=createLedger(process.env.DATABASE_PATH||fileURLToPath(new URL('./monperks.sqlite',import.meta.url)));
+let signerKey=process.env.TESTNET_SIGNER_KEY||'';
+if(!signerKey&&process.env.NODE_ENV!=='production'){try{signerKey=JSON.parse(await readFile(new URL('./testnet-signer.secret.json',import.meta.url),'utf8')).privateKey}catch{}}
+const testnet=createTestnetService(ledger.db,{origin,signerKey,deployment:async()=>{
+ if(process.env.TESTNET_DISTRIBUTOR&&process.env.TESTNET_TOKEN)return {distributor:process.env.TESTNET_DISTRIBUTOR,token:process.env.TESTNET_TOKEN};
+ try{return JSON.parse(await readFile(new URL('./testnet-deployment.json',import.meta.url),'utf8'))}catch{return null}
+}});
 const sign=id=>createHmac('sha256',sessionKey).update(id).digest('hex');
 function session(req){const token=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('mp_session='))?.slice(11);if(!token)return null;const [id,sig]=token.split('.');const expected=sign(id||'');if(!/^[a-f0-9]{64}$/.test(sig||'')||!timingSafeEqual(Buffer.from(sig),Buffer.from(expected)))return null;return ledger.hasUser(id)?id:null}
 async function body(req){let raw='';for await(const chunk of req){raw+=chunk;if(Buffer.byteLength(raw)>65536)throw new InputError('Request too large',413)}return raw}
@@ -28,6 +36,29 @@ export const server=http.createServer(async(req,res)=>{
    const hook=u.pathname.startsWith('/api/partner/');
    if(mutation&&!hook&&u.pathname!=='/api/admin/coupons'&&req.headers.origin!==origin)throw new InputError('Origin not allowed',403);
    if(mutation&&!(req.headers['content-type']||'').startsWith('application/json'))throw new InputError('application/json required',415);
+   if(req.method==='GET'&&u.pathname==='/api/testnet/config')return json(res,200,await testnet.config());
+   if(u.pathname==='/api/admin/community'){
+    if(!authorized(process.env.ADMIN_API_TOKEN,req.headers.authorization))throw new InputError('Admin token required',401);
+    if(req.method==='GET')return json(res,200,{reports:testnet.reports()});
+    if(req.method==='POST')return json(res,200,testnet.moderate(parseJSON(await body(req)).id));
+   }
+   if(req.method==='POST'&&u.pathname==='/api/auth/challenge'){const r=testnet.challenge(parseJSON(await body(req)).address);return json(res,200,r.body,{'Set-Cookie':r.cookie})}
+   if(req.method==='POST'&&u.pathname==='/api/auth/verify'){const r=testnet.login(req.headers,parseJSON(await body(req)).signature);return json(res,200,r.body,{'Set-Cookie':r.cookies})}
+   if(req.method==='POST'&&u.pathname==='/api/auth/logout')return json(res,200,{loggedOut:true},{'Set-Cookie':testnet.logout(req.headers)});
+   if(req.method==='GET'&&u.pathname==='/api/shared/posts')return json(res,200,{posts:testnet.posts()});
+   if(u.pathname.startsWith('/api/testnet/')||u.pathname.startsWith('/api/shared/')){
+    const address=testnet.account(req.headers);
+    if(req.method==='GET'&&u.pathname==='/api/testnet/account')return json(res,200,testnet.state(address));
+    if(req.method==='POST'&&u.pathname==='/api/testnet/checkin')return json(res,200,testnet.checkin(address));
+    if(req.method==='POST'&&u.pathname==='/api/testnet/voucher')return json(res,200,await testnet.voucher(address,req.headers['idempotency-key']));
+    if(req.method==='POST'&&u.pathname==='/api/testnet/confirm'){const b=parseJSON(await body(req));return json(res,200,await testnet.confirm(address,b.claimId,b.txHash))}
+    if(req.method==='POST'&&u.pathname==='/api/testnet/cancel-expired')return json(res,200,await testnet.cancelExpired(address,parseJSON(await body(req)).claimId));
+    if(req.method==='POST'&&u.pathname==='/api/shared/posts')return json(res,201,testnet.post(address,parseJSON(await body(req))));
+    if(req.method==='DELETE'&&u.pathname==='/api/shared/posts')return json(res,200,testnet.remove(address,parseJSON(await body(req)).id));
+    if(req.method==='POST'&&u.pathname==='/api/shared/comments')return json(res,201,testnet.comment(address,parseJSON(await body(req))));
+    if(req.method==='POST'&&u.pathname==='/api/shared/votes')return json(res,200,testnet.vote(address,parseJSON(await body(req)).postId));
+    if(req.method==='POST'&&u.pathname==='/api/shared/reports')return json(res,201,testnet.report(address,parseJSON(await body(req))));
+   }
    if(req.method==='GET'&&u.pathname==='/api/status')return json(res,200,{mode:'demo',livePayouts:false,adProviders:{google:'not_configured',meta:'not_configured',tiktok:'not_configured'},chainId:10143});
    if(req.method==='GET'&&u.pathname==='/api/coupons')return json(res,200,{offers:ledger.coupons(),source:'authorized-imports',demoCatalogIsBrowserLocal:true});
    if(req.method==='POST'&&u.pathname==='/api/demo/session'){let id=session(req);if(!id)id=ledger.createUser();return json(res,200,{accountId:id,balance:ledger.balance(id),mode:'demo'}, {'Set-Cookie':`mp_session=${id}.${sign(id)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400${origin.startsWith('https:')?'; Secure':''}`})}

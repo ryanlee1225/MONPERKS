@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {createHmac} from 'node:crypto';
+import {Wallet} from 'ethers';
 
 test('HTTP integration: origin, sessions, idempotent debit, disabled live payouts and verified callback intake',async(t)=>{
  const origin='http://localhost:4189',secret='test-integration-webhook-secret';
@@ -27,4 +28,16 @@ test('HTTP integration: origin, sessions, idempotent debit, disabled live payout
  const response=await request('/api/partner/events',intake);assert.equal(response.status,202);assert.equal((await response.json()).credited,false);
  assert.equal((await (await request('/api/partner/events',intake)).json()).accepted,false);
  const tampered=await request('/api/partner/events',{...intake,body:raw+' '});assert.equal(tampered.status,401);
+ const wallet=Wallet.createRandom();
+ const challenge=await request('/api/auth/challenge',{method:'POST',headers,body:JSON.stringify({address:wallet.address})});
+ const challengeCookie=challenge.headers.get('set-cookie').split(';')[0];const payload=await challenge.json();
+ const verified=await request('/api/auth/verify',{method:'POST',headers:{...headers,Cookie:challengeCookie},body:JSON.stringify({signature:await wallet.signMessage(payload.message)})});assert.equal(verified.status,200);
+ assert.match(verified.headers.get('set-cookie'),/HttpOnly/);const walletCookie=verified.headers.get('set-cookie').split(';')[0],walletHeaders={...headers,Cookie:walletCookie};
+ const fresh=await (await request('/api/testnet/account',{headers:walletHeaders})).json();assert.equal(fresh.points,0);
+ const signedIn=await (await request('/api/testnet/checkin',{method:'POST',headers:walletHeaders,body:'{}'})).json();assert.equal(signedIn.points,100);
+ assert.equal((await request('/api/shared/posts',{method:'POST',headers,body:JSON.stringify({title:'未登录的测试',body:'未登录用户不能提交社区动态。'})})).status,401);
+ const published=await request('/api/shared/posts',{method:'POST',headers:walletHeaders,body:JSON.stringify({title:'HTTP 共享动态',body:'使用经过验证的钱包身份发表服务端持久化内容。'})});assert.equal(published.status,201);
+ assert.equal((await (await request('/api/shared/posts')).json()).posts.length,1);
+ await request('/api/auth/logout',{method:'POST',headers:walletHeaders,body:'{}'});
+ assert.equal((await request('/api/testnet/account',{headers:walletHeaders})).status,401);
 });

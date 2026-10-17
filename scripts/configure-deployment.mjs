@@ -1,0 +1,11 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {Contract,JsonRpcProvider,Wallet} from 'ethers';
+const source=process.argv[2];if(!source)throw Error('Usage: node scripts/configure-deployment.mjs <downloaded-deployment.json>');
+const d=JSON.parse(await readFile(source,'utf8'));
+if(d.chainId!==10143)throw Error('Monad Testnet only');
+const key=process.env.TESTNET_SIGNER_KEY||JSON.parse(await readFile(new URL('../api/testnet-signer.secret.json',import.meta.url),'utf8')).privateKey;
+const provider=new JsonRpcProvider('https://testnet-rpc.monad.xyz');
+const reward=new Contract(d.distributor,['function rewardToken() view returns(address)','function rewardSigner() view returns(address)','function paused() view returns(bool)'],provider);
+if(Number((await provider.getNetwork()).chainId)!==10143||(await provider.getCode(d.token))==='0x')throw Error('Network or token is invalid');
+if((await reward.rewardToken()).toLowerCase()!==d.token.toLowerCase()||(await reward.rewardSigner()).toLowerCase()!==new Wallet(key).address.toLowerCase()||await reward.paused())throw Error('Deployment settings do not match this backend');
+await writeFile(new URL('../api/testnet-deployment.json',import.meta.url),JSON.stringify(d,null,2));console.log('Verified Monad Testnet deployment saved:',d.distributor);

@@ -1,0 +1,9 @@
+node_modules
+.git
+.openai
+.env
+.env.*
+!.env.example
+**/*.sqlite*
+**/*.secret.json
+api/testnet-deployment.json

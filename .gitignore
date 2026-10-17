@@ -11,3 +11,9 @@ api/*.sqlite*
 .sites-runtime/
 .sites-checkout/
 coverage/
+*.secret.json
+api/testnet-deployment.json
+dist/testnet.js
+dist/contracts.json
+cache/
+artifacts/

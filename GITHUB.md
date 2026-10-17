@@ -13,9 +13,11 @@
 Pages 只托管 `dist/` 静态演示，不运行 `api/server.mjs`，不提供多人社区或真实提现。
 
 1. 在仓库 Settings → Pages → Build and deployment 中选择 GitHub Actions。
-2. 打开 Actions → Publish demo to GitHub Pages → Run workflow。
+2. 更新后 main 分支推送会自动触发部署，也可打开 Actions → Publish demo to GitHub Pages → Run workflow。
 3. 工作流成功后，使用 deployment 返回的 page_url 作为展示链接，不使用 localhost 链接提交。
 
 资源使用相对路径，支持仓库子目录形式的 Pages 地址。Pages 支持情况取决于仓库可见性和 GitHub 计划；不要仅为启用 Pages 自动改变仓库可见性。
 
 部署流程参考：https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
+
+完整的签名登录、服务端共享社区和测试网领奖需要 Node 后端；GitHub Pages 只提供静态入口和离线演示。运行方式与 Docker 托管配置见 TESTNET.md。
