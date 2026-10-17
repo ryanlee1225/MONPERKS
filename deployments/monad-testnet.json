@@ -1,0 +1,16 @@
+{
+  "verifiedAt": "2026-10-17T07:34:32.348Z",
+  "chainId": 10143,
+  "block": 71762880,
+  "token": "0x0901e3034f389384a2411feE1Cfab85CB44922e5",
+  "distributor": "0x45103Cc85d30630452fE97737D3b33Be53aCca97",
+  "symbol": "MPRK",
+  "name": "MONPERKS DEMO - NO CASH VALUE",
+  "decimals": 18,
+  "poolBalance": "100000000000000000000",
+  "owner": "0xBE5b819a2c8F8e1986098bcdb94B2F61Cf41742B",
+  "signer": "0x2897dB97134431306929978d12087ADD05709DeD",
+  "paused": false,
+  "maxClaimAmount": "10000000000000000000",
+  "codeBytes": 4596
+}
