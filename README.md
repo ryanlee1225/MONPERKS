@@ -2,6 +2,24 @@
 
 优惠聚合 + 品牌发现 + Monad 奖励平台的可运行演示与接入工程。
 
+## Monad Testnet 合约与部署记录
+
+测试网奖励流程已完成实际验收：钱包签名登录 → 服务端签到 → 签名凭证 → 链上领取 → 后台对账。MPRK 为无现金价值的测试代币。
+
+| 项目 | 已核验信息 |
+| --- | --- |
+| 网络 | Monad Testnet，chain ID 10143 |
+| MPRK 代币 | `0x0901e3034f389384a2411feE1Cfab85CB44922e5` |
+| 奖励合约 | `0x45103Cc85d30630452fE97737D3b33Be53aCca97` |
+| 成功领取交易 | `0x5ae1aa9ec931aa7a7b32ce8052d801cf8ef039431fd41cbd820e4464087b0d9b` |
+| 验收结果 | 领取 1 MPRK，交易已 finalized，后台状态 claimed；核验时奖励池剩余 99 MPRK |
+
+- [代币合约源码](contracts/src/DemoRewardToken.sol) · [奖励合约源码](contracts/src/RewardDistributor.sol)
+- [部署与运行说明](TESTNET.md) · [部署工作台源码](web/testnet.mjs) · [配置核验脚本](scripts/configure-deployment.mjs)
+- [公开部署快照](deployments/monad-testnet.json) · [领取验收记录](deployments/monad-testnet-claim.json) · [完整验证说明](VALIDATION.md)
+
+运行后进入 `/#launch` 查看部署工作台，`/#testnet` 查看领奖页面。构建会生成合约 ABI/字节码及钱包客户端。GitHub Pages 仅运行静态前端；完整领奖需要 Node 后台。签名私钥、数据库、会话与本机后台配置均不上传，新环境按 TESTNET.md 配置自己的签名者。
+
 ## 快速运行
 
 需要 Node.js 24+。新增测试网模块使用 ethers；请先安装固定依赖并构建。
