@@ -21,12 +21,18 @@
 本轮已使用 Hardhat EDR 的 Cancun EVM 真正执行部署、充值、签名领取和事件确认，验证错误收款人、金额篡改、错误链、过期和重复领取拒绝，以及 finalized 状态核验后的过期预留释放。服务端 HTTP 测试验证 nonce 登录、会话退出、独立测试积分、共享动态与未登录拒绝。此结果不替代实际 Monad 测试网或浏览器钱包验收。
 
 - 浏览器环境仅提供空 MCP App 面板，未能执行真实浏览器截图或移动设备视觉验收。DOM 测试不是视觉验收。
-- 用户已通过钱包部署测试合约并充值、启用；RPC 状态已核验。钱包签名登录与实际领取验收仍待完成。广告平台、商家联盟和邮件服务尚未接入。
+- 用户已通过钱包部署测试合约并充值、启用；RPC 状态已核验。用户已完成钱包签名登录、每日签到及真实测试网领取，链上事件与后台账本对账通过。广告平台、商家联盟和邮件服务尚未接入。
 - 环境没有 forge，Foundry 运行测试未执行。合约编译成功不等于已通过链上测试或安全审计。
-- Monad Testnet 已部署 MPRK 与奖励合约，核验时奖励池 100 MPRK、paused=false、签名者匹配。公开快照见 deployments/monad-testnet.json；尚未记录用户领取交易或完成浏览器源码验证。
+- Monad Testnet 已部署 MPRK 与奖励合约，核验时奖励池 100 MPRK、paused=false、签名者匹配。公开快照见 deployments/monad-testnet.json；已记录用户领取交易；浏览器源码验证尚未完成。
 - 已登记 owner-private Sites 项目并保存项目 ID，但发布助手的 stdin 操作被自动审批拒绝（所需 sandbox_approval 被当前策略禁止），未完成源码同步或线上发布。项目身份保留供后续继续使用，不应重新创建重复项目。
 
 ## 本地与发布内容
 
 浏览器前端 demo 账本保存在本设备；本地 Node API 的 SQLite 演示账本独立。静态托管不包含 Node API。正式接入说明见 INTEGRATION.md。
 
+
+## 实际测试网领取验收
+
+2026-10-17 15:46（北京时间），已核验用户钱包交易 `0x5ae1aa9ec931aa7a7b32ce8052d801cf8ef039431fd41cbd820e4464087b0d9b`。交易成功，区块 71764306 已处于 finalized 范围，正确奖励合约发出 Claimed 事件，正确 MPRK 合约向领取人转账 1 MPRK，凭证 consumed=true。奖励池余额 99 MPRK。后台今日签到记录一次，消耗 100 测试积分，剩余 0，领取状态 claimed 且交易哈希匹配。公开凭证见 deployments/monad-testnet-claim.json。
+
+该验收完成本机全栈服务连接 Monad Testnet 的实际奖励闭环。GitHub Pages 仍只托管静态前端，真实广告/联盟及 USDT 商业结算尚未接入。

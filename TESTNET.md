@@ -74,6 +74,10 @@ Dockerfile 已提供。生产模式必须设置：HTTPS APP_ORIGIN、至少 32 �
 - 奖励池：核验时 100 MPRK；已启用，单次上限 10 MPRK。
 - 奖励签名者：`0x2897dB97134431306929978d12087ADD05709DeD`，与本机后台一致。
 
-公开核验快照见 `deployments/monad-testnet.json`。余额和启用状态可能随交易改变。该记录是 RPC 状态核验，不代表区块浏览器源码验证或安全审计；用户实际领取交易仍待验收。
+公开核验快照见 `deployments/monad-testnet.json`。余额和启用状态可能随交易改变。该记录是 RPC 状态核验，不代表区块浏览器源码验证或安全审计；用户实际领取交易已于同日完成并通过核验，见下文。
 
 本机后台已登记上述地址。新部署后台必须管理自己的签名密钥，不能仅复制公开地址后直接签发；原合约只接受已配置签名者授权。需要更换签名者时，由 owner 在暂停状态下操作。
+
+## 首笔实际领取已通过
+
+交易：`0x5ae1aa9ec931aa7a7b32ce8052d801cf8ef039431fd41cbd820e4464087b0d9b`。用户完成签名登录、签到和钱包领取；RPC 已核验成功回执、匹配的 Claimed 与 Transfer 事件、consumed=true 及 finalized 区块范围。到账金额 1 MPRK，奖励池余量 99 MPRK，后台扣减 100 积分并标记 claimed。公开记录见 `deployments/monad-testnet-claim.json`。这是测试代币技术验收，不代表真实 USDT 或广告收入结算。

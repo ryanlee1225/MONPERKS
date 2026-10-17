@@ -1,0 +1,21 @@
+{
+  "verifiedAt": "2026-10-17T07:46:27.497Z",
+  "chainId": 10143,
+  "transactionHash": "0x5ae1aa9ec931aa7a7b32ce8052d801cf8ef039431fd41cbd820e4464087b0d9b",
+  "blockNumber": 71764306,
+  "blockHash": "0x1b211876c733b2e2ee09604efb594cbf9c40ec8fc6b32e2239f51f5702827a06",
+  "status": 1,
+  "finalizedBlock": 71765235,
+  "finalized": true,
+  "distributor": "0x45103Cc85d30630452fE97737D3b33Be53aCca97",
+  "token": "0x0901e3034f389384a2411feE1Cfab85CB44922e5",
+  "recipient": "0xBE5b819a2c8F8e1986098bcdb94B2F61Cf41742B",
+  "claimId": "0x08af724346e67e5a7d3223aef3eeb962cfdd21997e7fe779e93a4d19c83a59cf",
+  "amount": "1000000000000000000",
+  "consumed": true,
+  "poolBalance": "99000000000000000000",
+  "backendReconciled": true,
+  "pointsSpent": 100,
+  "pointsRemaining": 0,
+  "dailyCheckinCount": 1
+}
