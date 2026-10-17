@@ -1,0 +1,30 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {createHmac} from 'node:crypto';
+
+test('HTTP integration: origin, sessions, idempotent debit, disabled live payouts and verified callback intake',async(t)=>{
+ const origin='http://localhost:4189',secret='test-integration-webhook-secret';
+ const child=spawn(process.execPath,['api/server.mjs'],{env:{...process.env,PORT:'4189',APP_ORIGIN:origin,DATABASE_PATH:':memory:',SESSION_SECRET:'test-integration-session-secret',PARTNER_WEBHOOK_SECRET:secret,ADMIN_API_TOKEN:'test-admin-token'},stdio:['ignore','pipe','pipe']});
+ t.after(()=>child.kill());
+ await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Server startup timed out')),5000);child.once('error',reject);child.stdout.on('data',b=>{if(b.toString().includes('ready')){clearTimeout(timer);resolve()}});child.once('exit',code=>{if(code)reject(Error('Startup failed '+code))})});
+ const headers={'Content-Type':'application/json',Origin:origin};
+ const request=(url,init)=>fetch(origin+url,init);
+ assert.equal((await request('/')).status,200);
+ const status=await (await request('/api/status')).json();assert.equal(status.livePayouts,false);
+ assert.equal((await request('/api/demo/session',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://evil.test'},body:'{}'})).status,403);
+ const session=await request('/api/demo/session',{method:'POST',headers,body:'{}'});assert.equal(session.status,200);const cookie=session.headers.get('set-cookie').split(';')[0];const account=await session.json();assert.equal(account.balance,1250);
+ const h={...headers,Cookie:cookie};
+ const a=await (await request('/api/demo/checkin',{method:'POST',headers:h,body:'{}'})).json();assert.equal(a.balance,1270);
+ const b=await (await request('/api/demo/checkin',{method:'POST',headers:h,body:'{}'})).json();assert.equal(b.awarded,false);
+ const redeem={method:'POST',headers:{...h,'Idempotency-Key':'test_http_redemption_001'},body:JSON.stringify({points:1000,address:'0x1111111111111111111111111111111111111111'})};
+ const r=await (await request('/api/demo/redeem',redeem)).json();assert.equal(r.status,'demo_completed');const replay=await (await request('/api/demo/redeem',redeem)).json();assert.equal(replay.id,r.id);assert.equal(replay.replayed,true);
+ const bal=await (await request('/api/demo/account',{headers:{Cookie:cookie}})).json();assert.equal(bal.balance,270);
+ assert.equal((await request('/api/redeem',{method:'POST',headers,body:'{}'})).status,503);
+ assert.equal((await request('/api/admin/coupons',{method:'POST',headers,body:'{}'})).status,401);
+ const raw=JSON.stringify({eventId:'http-event-1',accountRef:account.accountId,offerId:'offer-1'}),ts=String(Date.now()),signature='sha256='+createHmac('sha256',secret).update(ts+'.'+raw).digest('hex');
+ const intake={method:'POST',headers:{'Content-Type':'application/json','X-Partner-Provider':'affiliate','X-Event-Timestamp':ts,'X-Event-Signature':signature},body:raw};
+ const response=await request('/api/partner/events',intake);assert.equal(response.status,202);assert.equal((await response.json()).credited,false);
+ assert.equal((await (await request('/api/partner/events',intake)).json()).accepted,false);
+ const tampered=await request('/api/partner/events',{...intake,body:raw+' '});assert.equal(tampered.status,401);
+});

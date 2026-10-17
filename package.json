@@ -1,0 +1,21 @@
+{
+  "name": "monperks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node api/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check dist/app.js && node --check dist/adapters.js && node --check api/server.mjs && node --check api/ledger.mjs && node --check dist/community.js",
+    "build": "node scripts/build.mjs",
+    "check:contracts": "node scripts/compile-contracts.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "5.4.0",
+    "jsdom": "26.1.0",
+    "solc": "0.8.28"
+  }
+}

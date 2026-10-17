@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6d45e8">
+  <meta name="description" content="MONPERKS 优惠聚合与 Monad 奖励中心。发现购物优惠、收藏灵感，体验积分兑换流程。">
+  <title>MONPERKS — 好优惠，也有好回报</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./community.css">
+  <script src="./config.js" defer></script><script src="./adapters.js" defer></script><script src="./app.js" defer></script><script src="./community.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <div class="announcement"><span class="spark">✦</span> 好优惠，也有好回报。发现你喜欢的，奖励每一次探索。<span class="demo-badge">DEMO · 测试网演示</span></div>
+  <header class="header"><div class="container header-inner">
+    <a href="#discover" class="logo" aria-label="MONPERKS 首页"><span class="logo-symbol">m<span>✦</span></span>monperks<span class="logo-dot">.</span></a>
+    <nav aria-label="主导航"><a href="#discover" data-nav="discover">发现优惠</a><a href="#earn" data-nav="earn">赚取积分 <span class="nav-new">NEW</span></a><a href="#saved" data-nav="saved">我的收藏</a></nav>
+    <div class="header-actions"><button class="balance-chip" data-action="wallet"><span class="coin-icon">✦</span><span id="nav-points">1,250</span></button><button class="wallet-button" data-action="connect"><span class="wallet-icon">▱</span><span id="connect-label">连接钱包</span></button></div>
+  </div></header>
+  <main id="main" tabindex="-1"></main>
+  <footer class="footer"><div class="container"><div class="footer-main"><div class="footer-brand"><a class="logo" href="#discover"><span class="logo-symbol">m<span>✦</span></span>monperks<span class="logo-dot">.</span></a><p>好生活，不必原价。<br>让每一次发现，都更有价值。</p><div class="socials" id="socials"></div></div><div><h3>发现更多</h3><a href="#discover">全部优惠</a><a href="#earn">奖励中心</a><a href="#saved">我的收藏</a><a href="#wallet">积分钱包</a></div><div><h3>一起创造价值</h3><button data-action="merchant">提交优惠</button><button data-action="partners">品牌与广告合作</button><button data-action="how">如何赚取奖励</button><a href="https://docs.monad.xyz/developer-essentials" target="_blank" rel="noopener noreferrer">认识 Monad ↗</a></div><div class="footer-newsletter"><h3>下一个好优惠，不错过。</h3><p>收藏喜欢的品牌，让优惠来找你。</p><form id="newsletter-form"><label class="sr-only" for="newsletter-email">邮箱地址</label><input id="newsletter-email" type="email" placeholder="输入你的邮箱" required maxlength="254"><button aria-label="订阅优惠提醒" type="submit">↗</button></form><small>演示订阅仅保存在此设备，不会发送邮件。</small></div></div><div class="footer-bottom"><span>© 2026 MONPERKS. Built for the perks.</span><span class="powered"><i></i> Powered by Monad</span><div><button data-action="privacy">隐私政策</button><button data-action="terms">服务条款</button><button data-action="cookies">Cookie 设置</button></div></div><p class="footer-disclaimer">当前为产品演示：优惠、任务及余额均为示例，不保证商家接受示例优惠码；兑换不会发放真实 USDT。品牌标识仅用于展示，未建立合作关系。</p></div></footer>
+  <div class="mobile-nav"><a href="#discover" data-nav="discover">⌕<span>发现</span></a><a href="#earn" data-nav="earn">✦<span>奖励</span></a><a href="#saved" data-nav="saved">♡<span>收藏</span></a><a href="#wallet" data-nav="wallet">▱<span>钱包</span></a></div>
+  <dialog id="modal"><button class="modal-close" aria-label="关闭弹窗" data-action="close">×</button><div id="modal-content"></div></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="cookie-banner" class="cookie-banner" hidden><div><strong>你的隐私，由你选择。</strong><p>必要存储用于保存演示积分和收藏。广告与统计跟踪默认关闭。</p></div><button class="text-button" data-action="cookies">设置偏好</button><button class="button small" data-action="cookie-essential">仅必要存储</button></div>
+</body></html>

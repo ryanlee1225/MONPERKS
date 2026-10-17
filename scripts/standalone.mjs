@@ -1,0 +1,10 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+let html=readFileSync('dist/index.html','utf8');
+html=html.replace('<link rel="stylesheet" href="./style.css">',()=>'<style>'+readFileSync('dist/style.css','utf8')+'</style>');
+html=html.replace('<link rel="stylesheet" href="./community.css">',()=>'<style>'+readFileSync('dist/community.css','utf8')+'</style>');
+for(const file of ['config.js','adapters.js','app.js','community.js'])html=html.replace(`<script src="./${file}" defer></script>`,()=>'<script>'+readFileSync('dist/'+file,'utf8')+'</script>');
+const scripts=[];html=html.replace(/<script>[\s\S]*?<\/script>/g,s=>{scripts.push(s);return ''});
+html=html.replace('</body>',()=>scripts.join('\n')+'\n</body>');
+html=html.replace('href="./favicon.svg"','href="data:image/svg+xml;base64,'+Buffer.from(readFileSync('dist/favicon.svg')).toString('base64')+'"');
+writeFileSync('../MONPERKS-demo.html',html);
+console.log('Standalone demo: ../MONPERKS-demo.html');
